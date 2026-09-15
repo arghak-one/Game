@@ -1,0 +1,6 @@
+{
+  "name": "Mushak Mahotsav",
+  "description": "The Great Ganpati Rush - A festive 2.5D endless runner featuring Lord Ganesha's devoted companion Mushak. Run, jump, dodge obstacles, collect modaks, and activate Mahotsav Mode!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

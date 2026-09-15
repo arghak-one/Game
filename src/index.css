@@ -1,0 +1,271 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body, #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  }
+}
+
+.font-festive {
+  font-family: 'Cinzel', serif;
+}
+
+.font-yatra {
+  font-family: 'Yatra One', cursive, sans-serif;
+}
+
+/* Custom glowing effects */
+.text-gold-glow {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.7), 0 0 24px rgba(217, 119, 6, 0.4);
+}
+
+.text-fire-glow {
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.8), 0 0 20px rgba(249, 115, 22, 0.6);
+}
+
+.box-gold-glow {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Shimmer animation */
+@keyframes festive-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: festive-shimmer 2.5s infinite;
+}
+
+@keyframes float-subtle {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(0.8deg); }
+}
+
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-slow {
+  0%, 100% { filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.45)); }
+  50% { filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.85)); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow-slow 3s ease-in-out infinite;
+}
+
+@keyframes ember-rise {
+  0% { transform: translateY(0) translateX(0) scale(0.8); opacity: 0; }
+  25% { opacity: 0.9; }
+  75% { opacity: 0.7; }
+  100% { transform: translateY(-120px) translateX(15px) scale(0.4); opacity: 0; }
+}
+
+.animate-ember-1 { animation: ember-rise 4.5s ease-in-out infinite; }
+.animate-ember-2 { animation: ember-rise 5.5s ease-in-out 1.2s infinite; }
+.animate-ember-3 { animation: ember-rise 6.5s ease-in-out 2.4s infinite; }
+.animate-ember-4 { animation: ember-rise 5s ease-in-out 3.1s infinite; }
+
+/* 3D sculpted gold bevel effect */
+.gold-embossed-button {
+  background: linear-gradient(180deg, #fef08a 0%, #f59e0b 45%, #d97706 80%, #b45309 100%);
+  box-shadow: 
+    0 2px 0 #78350f,
+    0 8px 24px rgba(245, 158, 11, 0.6),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -2px 4px rgba(120, 53, 15, 0.6);
+}
+
+.gold-embossed-button:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 
+    0 1px 0 #78350f,
+    0 4px 12px rgba(245, 158, 11, 0.5),
+    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.gold-title-3d {
+  text-shadow: 
+    0 1px 0 #fde68a,
+    0 2px 0 #f59e0b,
+    0 3px 0 #d97706,
+    0 4px 0 #b45309,
+    0 5px 0 #78350f,
+    0 8px 16px rgba(0, 0, 0, 0.8),
+    0 0 25px rgba(245, 158, 11, 0.5);
+}
+
+.crimson-title-3d {
+  text-shadow: 
+    0 1px 0 #fed7aa,
+    0 2px 0 #f97316,
+    0 3px 0 #ea580c,
+    0 4px 0 #c2410c,
+    0 5px 0 #7c2d12,
+    0 8px 16px rgba(0, 0, 0, 0.85),
+    0 0 25px rgba(234, 88, 12, 0.6);
+}
+
+.game-over-title-3d {
+  text-shadow: 
+    0 1px 0 #fef08a,
+    0 2px 0 #fbbf24,
+    0 3px 0 #f59e0b,
+    0 4px 0 #d97706,
+    0 5px 0 #b45309,
+    0 6px 0 #78350f,
+    0 8px 20px rgba(0, 0, 0, 0.9),
+    0 0 28px rgba(245, 158, 11, 0.6);
+}
+
+@keyframes breathing-glow {
+  0%, 100% {
+    box-shadow: 
+      0 2px 0 #78350f,
+      0 6px 20px rgba(245, 158, 11, 0.5),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.75),
+      inset 0 -2px 4px rgba(120, 53, 15, 0.6);
+  }
+  50% {
+    box-shadow: 
+      0 2px 0 #78350f,
+      0 10px 30px rgba(245, 158, 11, 0.85),
+      0 0 20px rgba(251, 191, 36, 0.7),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -2px 4px rgba(120, 53, 15, 0.5);
+  }
+}
+
+.animate-breathing-cta {
+  animation: breathing-glow 2.8s ease-in-out infinite;
+}
+
+@keyframes diya-flame {
+  0%, 100% { transform: scale(1) rotate(-1deg); opacity: 0.9; }
+  50% { transform: scale(1.12) rotate(1.5deg); opacity: 1; }
+}
+
+.animate-diya {
+  animation: diya-flame 1.8s ease-in-out infinite;
+}
+
+.ornate-gold-panel {
+  background: radial-gradient(circle at 50% 0%, rgba(100, 23, 42, 0.92) 0%, rgba(15, 10, 25, 0.96) 80%);
+  box-shadow: 
+    0 12px 36px rgba(0, 0, 0, 0.85),
+    inset 0 1px 1px rgba(251, 191, 36, 0.4),
+    inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================================================= */
+/* RESPONSIVE COHESIVE UI SCALE SYSTEM (Mobile: 1.0x -> Desktop: 1.4x)       */
+/* ========================================================================= */
+:root {
+  --game-scale: 1;
+  --title-mushak: 2.25rem;
+  --title-mahotsav: 1.85rem;
+  --medallion-size: 144px;
+  --btn-play-max-w: 320px;
+  --btn-play-py: 1rem;
+  --btn-play-font: 1.25rem;
+  --nav-max-w: 390px;
+  --nav-btn-py: 0.5rem;
+  --nav-icon-size: 2rem;
+  --gameover-max-w: 440px;
+}
+
+/* Tablet: ~1.12x */
+@media (min-width: 640px) {
+  :root {
+    --game-scale: 1.12;
+    --title-mushak: 3.25rem;
+    --title-mahotsav: 2.65rem;
+    --medallion-size: 180px;
+    --btn-play-max-w: 380px;
+    --btn-play-py: 1.125rem;
+    --btn-play-font: 1.45rem;
+    --nav-max-w: 440px;
+    --nav-btn-py: 0.625rem;
+    --nav-icon-size: 2.25rem;
+    --gameover-max-w: 540px;
+  }
+}
+
+/* Small Laptop / Medium screens: ~1.22x */
+@media (min-width: 768px) {
+  :root {
+    --game-scale: 1.22;
+    --title-mushak: 3.85rem;
+    --title-mahotsav: 3.15rem;
+    --medallion-size: 204px;
+    --btn-play-max-w: 420px;
+    --btn-play-py: 1.25rem;
+    --btn-play-font: 1.6rem;
+    --nav-max-w: 500px;
+    --nav-btn-py: 0.75rem;
+    --nav-icon-size: 2.5rem;
+    --gameover-max-w: 620px;
+  }
+}
+
+/* Laptop / Desktop: ~1.34x */
+@media (min-width: 1024px) {
+  :root {
+    --game-scale: 1.34;
+    --title-mushak: 4.5rem;
+    --title-mahotsav: 3.6rem;
+    --medallion-size: 228px;
+    --btn-play-max-w: 460px;
+    --btn-play-py: 1.375rem;
+    --btn-play-font: 1.75rem;
+    --nav-max-w: 560px;
+    --nav-btn-py: 0.875rem;
+    --nav-icon-size: 2.75rem;
+    --gameover-max-w: 680px;
+  }
+}
+
+/* Large Desktop / Ultra-wide: 1.4x max */
+@media (min-width: 1440px) {
+  :root {
+    --game-scale: 1.4;
+    --title-mushak: 5.25rem;
+    --title-mahotsav: 4.15rem;
+    --medallion-size: 248px;
+    --btn-play-max-w: 490px;
+    --btn-play-py: 1.5rem;
+    --btn-play-font: 1.875rem;
+    --nav-max-w: 600px;
+    --nav-btn-py: 1rem;
+    --nav-icon-size: 3rem;
+    --gameover-max-w: 740px;
+  }
+}
+
+/* Height-constrained laptops (e.g. 1280x720, 1366x768 with browser toolbars) */
+@media (max-height: 740px) and (min-width: 640px) {
+  :root {
+    --title-mushak: clamp(2.4rem, 5.5vh, 3.25rem);
+    --title-mahotsav: clamp(1.9rem, 4.5vh, 2.65rem);
+    --medallion-size: clamp(130px, 22vh, 175px);
+    --btn-play-py: 0.75rem;
+    --btn-play-font: 1.3rem;
+    --nav-btn-py: 0.45rem;
+    --nav-icon-size: 2rem;
+  }
+}
+
+
