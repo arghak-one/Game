@@ -17,8 +17,8 @@ export const PauseModal: React.FC<PauseModalProps> = ({
   onOpenTutorial,
 }) => {
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md select-none">
-      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg bg-neutral-900/95 border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 flex flex-col items-center text-center">
+    <div className="absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md select-none overflow-y-auto">
+      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg max-h-[96dvh] overflow-y-auto bg-neutral-900/95 border-2 border-amber-500/50 rounded-3xl p-5 sm:p-7 md:p-8 shadow-2xl shadow-black/80 flex flex-col items-center text-center my-auto">
         {/* Header */}
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-festive text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-amber-400 mb-1">
           PAUSED

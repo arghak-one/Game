@@ -17,6 +17,17 @@ export class CollectibleManager {
     this.gameWidth = w;
   }
 
+  /**
+   * Shift all existing collectibles when orientation/viewport width changes
+   * during an active run so relative spacing to Mushak is seamlessly preserved.
+   */
+  public shiftAll(deltaX: number): void {
+    for (let i = 0; i < this.collectibles.length; i++) {
+      this.collectibles[i].x += deltaX;
+    }
+    this.lastSpawnX += deltaX;
+  }
+
   public reset(): void {
     this.collectibles = [];
     this.nextId = 1;

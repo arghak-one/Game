@@ -51,6 +51,12 @@ export class GameEngine {
   private cameraShake: number = 0;
   private cameraOffsetY: number = 0;
 
+  // Dedicated Landscape Viewport State
+  public isLandscapeMode: boolean = false;
+  public cameraViewY: number = 0;
+  public viewHeight: number = GAME_HEIGHT;
+  public viewWidth: number = GAME_WIDTH;
+
   // Callback to update React HUD
   public onStatsUpdate?: (stats: GameStats) => void;
   public onGameOver?: (finalStats: GameStats) => void;
@@ -87,9 +93,29 @@ export class GameEngine {
   public resize(displayWidth: number, displayHeight: number): void {
     if (!displayWidth || !displayHeight) return;
     const aspect = displayWidth / displayHeight;
-    // Set virtual internal width based on aspect ratio, keeping height constant at GAME_HEIGHT (1600)
-    this.width = Math.round(GAME_HEIGHT * aspect);
-    this.height = GAME_HEIGHT;
+    const isLandscape = aspect >= 1.25;
+
+    this.isLandscapeMode = isLandscape;
+
+    if (isLandscape) {
+      // LANDSCAPE VIEWPORT:
+      // Keep height framed comfortably around the action (920 units)
+      // so Mushak, obstacles, and collectibles are prominent and readable.
+      this.viewHeight = 920;
+      this.viewWidth = Math.round(this.viewHeight * aspect);
+      this.width = this.viewWidth;
+      this.height = this.viewHeight;
+      this.cameraViewY = 480;
+    } else {
+      // PORTRAIT VIEWPORT:
+      // Standard GAME_HEIGHT (1600) with aspect-adjusted width
+      this.viewHeight = GAME_HEIGHT;
+      this.viewWidth = Math.round(GAME_HEIGHT * aspect);
+      this.width = this.viewWidth;
+      this.height = GAME_HEIGHT;
+      this.cameraViewY = 0;
+    }
+
     this.canvas.width = this.width;
     this.canvas.height = this.height;
 
@@ -98,11 +124,25 @@ export class GameEngine {
     this.collectibles.setGameWidth(this.width);
     this.background.setGameWidth(this.width);
 
+    // Calculate Mushak target X position:
+    // In landscape: 27% from left edge (generous road ahead)
+    // In portrait: 26% from left edge (capped at 320 for narrow portrait)
+    const targetPlayerX = isLandscape
+      ? Math.round(this.width * 0.27)
+      : Math.min(320, Math.round(this.width * PHYSICS.PLAYER_X_PERCENT));
+
     if (!this.isRunning) {
-      const startX = Math.min(320, this.width * PHYSICS.PLAYER_X_PERCENT);
       const startY = this.terrain.baseGroundY - 80;
-      this.player.reset(startX, startY, this.currentSkin);
+      this.player.reset(targetPlayerX, startY, this.currentSkin);
       this.render();
+    } else {
+      // Active run: smoothly shift player.x and offset obstacles/collectibles
+      const deltaX = targetPlayerX - this.player.x;
+      if (Math.abs(deltaX) > 4) {
+        this.player.x = targetPlayerX;
+        this.obstacles.shiftAll(deltaX);
+        this.collectibles.shiftAll(deltaX);
+      }
     }
   }
 
@@ -123,7 +163,9 @@ export class GameEngine {
     this.cameraShake = 0;
     this.cameraOffsetY = 0;
 
-    const startX = Math.min(320, this.width * PHYSICS.PLAYER_X_PERCENT);
+    const startX = this.isLandscapeMode
+      ? Math.round(this.width * 0.27)
+      : Math.min(320, Math.round(this.width * PHYSICS.PLAYER_X_PERCENT));
     const startY = this.terrain.baseGroundY - 80;
     this.player.reset(startX, startY, this.currentSkin);
     this.terrain.reset();
@@ -226,7 +268,8 @@ export class GameEngine {
     // 3. Mahotsav Mode Timer
     if (this.isMahotsav) {
       this.mahotsavTimer -= dt;
-      this.particles.emitMahotsavCelebration(GAME_WIDTH, GAME_HEIGHT);
+      const maxY = this.isLandscapeMode ? this.cameraViewY + this.viewHeight * 0.7 : GAME_HEIGHT;
+      this.particles.emitMahotsavCelebration(this.width, maxY);
       if (this.mahotsavTimer <= 0) {
         this.isMahotsav = false;
         this.player.isMahotsav = false;
@@ -317,7 +360,10 @@ export class GameEngine {
 
     // 9. Floating gentle flower petals in atmosphere
     if (!this.reducedEffects && Math.random() < 0.25) {
-      this.particles.emitPetals(this.width + 20, Math.random() * (GAME_HEIGHT * 0.7), 1);
+      const petalY = this.isLandscapeMode
+        ? this.cameraViewY + Math.random() * (this.viewHeight * 0.75)
+        : Math.random() * (GAME_HEIGHT * 0.7);
+      this.particles.emitPetals(this.width + 20, petalY, 1);
     }
 
     // 10. Update Particles
@@ -409,7 +455,8 @@ export class GameEngine {
     this.sound.startMusic(true);
     this.cameraShake = 8;
 
-    this.particles.addFloatingText('✨ MAHOTSAV MODE! ✨', this.width * 0.5, GAME_HEIGHT * 0.35, '#fbbf24');
+    const textY = this.isLandscapeMode ? this.cameraViewY + this.viewHeight * 0.35 : GAME_HEIGHT * 0.35;
+    this.particles.addFloatingText('✨ MAHOTSAV MODE! ✨', this.width * 0.5, textY, '#fbbf24');
   }
 
   private triggerGameOver(reason: string): void {
@@ -466,21 +513,33 @@ export class GameEngine {
 
   public render(): void {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.width, GAME_HEIGHT);
+    ctx.clearRect(0, 0, this.width, this.height);
 
     ctx.save();
 
     // Camera shake & vertical anticipation
+    let transX = 0;
+    let transY = -this.cameraViewY;
+
     if (this.cameraShake > 0) {
-      const shakeX = (Math.random() - 0.5) * this.cameraShake;
-      const shakeY = (Math.random() - 0.5) * this.cameraShake;
-      ctx.translate(shakeX, shakeY + this.cameraOffsetY);
+      transX += (Math.random() - 0.5) * this.cameraShake;
+      transY += (Math.random() - 0.5) * this.cameraShake + this.cameraOffsetY;
     } else if (this.cameraOffsetY !== 0) {
-      ctx.translate(0, this.cameraOffsetY);
+      transY += this.cameraOffsetY;
     }
 
+    ctx.translate(transX, transY);
+
     // 1. Background Layers
-    this.background.render(ctx, this.cameraX, performance.now() / 1000, this.currentTheme, this.isMahotsav);
+    this.background.render(
+      ctx,
+      this.cameraX,
+      performance.now() / 1000,
+      this.currentTheme,
+      this.isMahotsav,
+      this.cameraViewY,
+      this.viewHeight
+    );
 
     // 2. Terrain / Road
     this.terrain.render(ctx, performance.now() / 1000);
@@ -502,7 +561,7 @@ export class GameEngine {
       const pulse = Math.sin(performance.now() / 150) * 0.15 + 0.35;
       ctx.strokeStyle = `rgba(245, 158, 11, ${pulse})`;
       ctx.lineWidth = 20;
-      ctx.strokeRect(10, 10, this.width - 20, GAME_HEIGHT - 20);
+      ctx.strokeRect(10, this.cameraViewY + 10, this.width - 20, this.viewHeight - 20);
     }
 
     ctx.restore();

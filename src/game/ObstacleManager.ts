@@ -17,6 +17,17 @@ export class ObstacleManager {
     this.gameWidth = w;
   }
 
+  /**
+   * Shift all existing obstacles when orientation/viewport width changes
+   * during an active run so relative distance to Mushak is seamlessly preserved.
+   */
+  public shiftAll(deltaX: number): void {
+    for (let i = 0; i < this.obstacles.length; i++) {
+      this.obstacles[i].x += deltaX;
+    }
+    this.lastSpawnX += deltaX;
+  }
+
   public reset(): void {
     this.obstacles = [];
     this.nextId = 1;

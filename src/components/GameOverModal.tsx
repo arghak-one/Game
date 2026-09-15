@@ -45,7 +45,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
       {/* Cinematic Festival Atmosphere Canvas Container */}
       <div
         style={{ maxWidth: 'var(--gameover-max-w, 680px)' }}
-        className="relative w-full min-h-[580px] max-h-[96vh] rounded-3xl overflow-hidden border-2 border-amber-500/50 shadow-[0_0_60px_rgba(0,0,0,0.95)] flex flex-col justify-between my-auto bg-gradient-to-b from-[#07152f] via-[#17113f] to-[#0a0612]"
+        className="relative w-full min-h-0 sm:min-h-[520px] max-h-[96dvh] overflow-y-auto rounded-3xl border-2 border-amber-500/50 shadow-[0_0_60px_rgba(0,0,0,0.95)] flex flex-col justify-between my-auto bg-gradient-to-b from-[#07152f] via-[#17113f] to-[#0a0612]"
       >
         
         {/* Deep Festive Background with Lord Ganesha Pandal Depth */}

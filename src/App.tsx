@@ -11,6 +11,8 @@ import { LeaderboardModal } from './components/LeaderboardModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
 import { CharactersModal } from './components/CharactersModal';
 import { SettingsModal } from './components/SettingsModal';
+import { OrientationPrompt } from './components/OrientationPrompt';
+import { useDeviceOrientation } from './hooks/useDeviceOrientation';
 import { SoundManager } from './audio/SoundManager';
 import { FESTIVAL_BG_IMAGE } from './assets/characterAssets';
 
@@ -26,6 +28,13 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const engineRef = useRef<GameEngine | null>(null);
+
+  // Device & Orientation detection
+  const { isLandscape, isMobileLandscape, isMobilePortrait } = useDeviceOrientation();
+  const [showOrientationPrompt, setShowOrientationPrompt] = useState(false);
+  const [hasDismissedPrompt, setHasDismissedPrompt] = useState<boolean>(() => {
+    return sessionStorage.getItem('mushak_dismiss_orientation') === 'true';
+  });
 
   // States
   const [gameState, setGameState] = useState<GameState>('MENU');
@@ -166,6 +175,24 @@ export default function App() {
     sound.setMusicEnabled(settings.musicEnabled);
   }, [settings]);
 
+  // Re-adjust engine size immediately whenever orientation changes without resetting game state
+  useEffect(() => {
+    const container = stageRef.current || canvasRef.current?.parentElement;
+    if (container && engineRef.current) {
+      const handleOrientationResize = () => {
+        const rect = container.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          engineRef.current?.resize(rect.width, rect.height);
+        }
+      };
+
+      // Call immediately and again on next frame after layout classes apply
+      handleOrientationResize();
+      const raf = requestAnimationFrame(handleOrientationResize);
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [isLandscape, isMobileLandscape]);
+
   // Jump Input Handler
   const handleJump = useCallback(() => {
     if (gameState === 'PLAYING' && engineRef.current) {
@@ -197,10 +224,32 @@ export default function App() {
   }, [gameState, handleJump, isLeaderboardOpen, isCharactersOpen, isSettingsOpen, isTutorialOpen]);
 
   // Game Flow actions
+  const proceedToCountdown = () => {
+    setShowOrientationPrompt(false);
+    setGameState('COUNTDOWN');
+  };
+
   const handleStartCountdown = () => {
     SoundManager.getInstance().initOnGesture();
     SoundManager.getInstance().playButtonClick();
-    setGameState('COUNTDOWN');
+    if (isMobilePortrait && !hasDismissedPrompt) {
+      setShowOrientationPrompt(true);
+    } else {
+      proceedToCountdown();
+    }
+  };
+
+  const handleContinueInPortrait = () => {
+    setHasDismissedPrompt(true);
+    sessionStorage.setItem('mushak_dismiss_orientation', 'true');
+    proceedToCountdown();
+  };
+
+  const handleOrientationPromptDismiss = () => {
+    setShowOrientationPrompt(false);
+    if (gameState === 'MENU') {
+      proceedToCountdown();
+    }
   };
 
   const handleStartRun = () => {
@@ -335,18 +384,15 @@ export default function App() {
         </div>
       </div>
 
-      {/* 2. CENTERED RESPONSIVE GAME CONTAINER */}
+      {/* 2. CENTERED RESPONSIVE GAME CONTAINER / FULLSCREEN MOBILE LANDSCAPE STAGE */}
       <div
         id="game-stage-shell"
         ref={stageRef}
-        className="relative z-10 w-full h-full
-                   sm:w-[clamp(440px,80vw,1040px)]
-                   sm:h-[min(calc(100dvh-20px),1020px)]
-                   sm:max-w-[min(1040px,calc((100dvh-20px)*1.18))]
-                   sm:my-auto mx-auto
-                   sm:rounded-3xl flex items-center justify-center
-                   shadow-[0_0_70px_rgba(0,0,0,0.95)] overflow-hidden bg-neutral-950
-                   sm:border-2 sm:border-amber-500/50"
+        className={`relative z-10 flex items-center justify-center overflow-hidden bg-neutral-950 ${
+          isMobileLandscape
+            ? 'fixed inset-0 w-screen h-[100dvh] max-w-none max-h-none rounded-none border-0 shadow-none'
+            : 'w-full h-full sm:w-[clamp(440px,80vw,1040px)] sm:h-[min(calc(100dvh-20px),1020px)] sm:max-w-[min(1040px,calc((100dvh-20px)*1.18))] sm:my-auto mx-auto sm:rounded-3xl shadow-[0_0_70px_rgba(0,0,0,0.95)] sm:border-2 sm:border-amber-500/50'
+        }`}
       >
         {/* Core 2D/2.5D Canvas */}
         <canvas
@@ -360,7 +406,7 @@ export default function App() {
         {/* HUD Overlay (Visible during active gameplay and pause) */}
         {gameState === 'PLAYING' && (
           <div id="hud-touch-area" className="absolute inset-0">
-            <HUD stats={stats} onPause={handlePause} />
+            <HUD stats={stats} onPause={handlePause} isLandscape={isLandscape} />
           </div>
         )}
 
@@ -454,6 +500,15 @@ export default function App() {
           />
         )}
       </div>
+
+      {/* Orientation Prompt (Shown when starting game in mobile portrait) */}
+      {showOrientationPrompt && (
+        <OrientationPrompt
+          isLandscape={isLandscape}
+          onDismiss={handleOrientationPromptDismiss}
+          onContinueInPortrait={handleContinueInPortrait}
+        />
+      )}
     </main>
   );
 }

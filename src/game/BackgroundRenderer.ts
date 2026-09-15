@@ -47,12 +47,16 @@ export class BackgroundRenderer {
     cameraX: number,
     animTime: number,
     theme: LocationTheme,
-    isMahotsav: boolean
+    isMahotsav: boolean,
+    cameraViewY: number = 0,
+    viewHeight: number = GAME_HEIGHT
   ): void {
     ctx.save();
 
     // 1. SKY GRADIENT
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT * 0.75);
+    const skyTopY = cameraViewY > 0 ? cameraViewY : 0;
+    const skyBottomY = GAME_HEIGHT * 0.75;
+    const skyGrad = ctx.createLinearGradient(0, skyTopY, 0, skyBottomY);
     if (isMahotsav) {
       // Golden celebratory sky during Mahotsav Mode!
       skyGrad.addColorStop(0, '#2e1065'); // Royal cosmic violet
@@ -85,10 +89,10 @@ export class BackgroundRenderer {
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, this.gameWidth, GAME_HEIGHT);
 
-    // 2. CELESTIAL MOON
+    // 2. CELESTIAL MOON (Placed high in visible sky)
     ctx.save();
     const moonX = this.gameWidth * 0.82;
-    const moonY = GAME_HEIGHT * 0.14;
+    const moonY = cameraViewY > 0 ? cameraViewY + viewHeight * 0.14 : GAME_HEIGHT * 0.14;
     // Moon halo
     const moonHalo = ctx.createRadialGradient(moonX, moonY, 15, moonX, moonY, 70);
     moonHalo.addColorStop(0, 'rgba(254, 240, 138, 0.4)');
@@ -108,10 +112,11 @@ export class BackgroundRenderer {
     // 3. TWINKLING STARS
     ctx.fillStyle = '#ffffff';
     for (const star of this.skyStars) {
+      const sy = cameraViewY > 0 ? cameraViewY + ((star.y / (GAME_HEIGHT * 0.45)) * (viewHeight * 0.42)) : star.y;
       const pulse = Math.sin(animTime * star.pulseSpeed) * 0.3 + 0.7;
       ctx.globalAlpha = star.alpha * pulse;
       ctx.beginPath();
-      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.arc(star.x, sy, star.size, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1.0;
@@ -119,7 +124,8 @@ export class BackgroundRenderer {
     // 4. FLOATING FESTIVAL SKY LANTERNS (KANDILS)
     for (const k of this.lanterns) {
       const kx = ((k.x - cameraX * 0.05) % (this.gameWidth + 100) + this.gameWidth + 100) % (this.gameWidth + 100) - 50;
-      const ky = k.y + Math.sin(animTime * 1.5 + k.swing) * 8;
+      const kyBase = cameraViewY > 0 ? cameraViewY + 25 + ((k.y / (GAME_HEIGHT * 0.35)) * (viewHeight * 0.3)) : k.y;
+      const ky = kyBase + Math.sin(animTime * 1.5 + k.swing) * 8;
       // Lantern glow
       const lGrad = ctx.createRadialGradient(kx, ky, 2, kx, ky, k.size * 1.8);
       lGrad.addColorStop(0, 'rgba(251, 191, 36, 0.8)');
@@ -155,7 +161,7 @@ export class BackgroundRenderer {
     this.renderMidgroundBuildings(ctx, cameraX * 0.22, animTime, theme);
 
     // 7. LAYER 3: HANGING MARIGOLD GARLANDS & FESTIVAL STREET LAMPS (Parallax factor 0.45)
-    this.renderStreetGarlands(ctx, cameraX * 0.45, animTime);
+    this.renderStreetGarlands(ctx, cameraX * 0.45, animTime, cameraViewY, viewHeight);
 
     ctx.restore();
   }
@@ -338,17 +344,20 @@ export class BackgroundRenderer {
   private renderStreetGarlands(
     ctx: CanvasRenderingContext2D,
     offset: number,
-    animTime: number
+    animTime: number,
+    cameraViewY: number = 0,
+    viewHeight: number = GAME_HEIGHT
   ): void {
     ctx.save();
     const garlandSpan = 280;
     const startIdx = Math.floor(offset / garlandSpan);
     const count = Math.ceil(this.gameWidth / garlandSpan) + 2;
 
+    const gy = cameraViewY > 0 ? cameraViewY + viewHeight * 0.35 : GAME_HEIGHT * 0.46;
+
     for (let i = startIdx - 1; i <= startIdx + count; i++) {
       const gx1 = i * garlandSpan - offset;
       const gx2 = gx1 + garlandSpan;
-      const gy = GAME_HEIGHT * 0.46;
 
       // Swaying Marigold & Mango Leaf Toran (Garland)
       const sag = 45 + Math.sin(animTime * 2 + i) * 4;
